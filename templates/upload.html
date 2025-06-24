@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Qlik to Draw.io</title>
+</head>
+<body>
+  <div class="container">
+    <h2>Qlik to Draw.io</h2>
+    <form method="POST" action="/upload" enctype="multipart/form-data">
+      <div class="file-block">
+        <label for="qlik_csv">Choose your Qlik-exported CSV file:</label>
+        <input id="qlik_csv" type="file" name="qlik_csv" accept=".csv" required>
+      </div>
+      <button type="submit">Generate .drawio</button>
+    </form>
+  </div>
+</body>
+</html>

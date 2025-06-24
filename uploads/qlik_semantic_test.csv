@@ -1,0 +1,13 @@
+﻿TableName,FieldName,KeyType
+Users,id,PK
+Users,name,
+Users,email,
+Orders,id,PK
+Orders,user_id,FK:Users.id
+Orders,total,
+Products,id,PK
+Products,name,
+Products,price,
+OrderDetails,order_id,FK:Orders.id
+OrderDetails,product_id,FK:Products.id
+OrderDetails,quantity,
