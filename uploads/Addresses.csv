@@ -1,0 +1,3 @@
+id,user_id,street,city,state,zip,type
+601,1,123 Main St,Townsville,TS,12345,home
+602,2,456 Maple Ave,Mapleton,MP,67890,work

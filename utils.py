@@ -3,24 +3,29 @@ from collections import defaultdict
 import xml.etree.ElementTree as ET
 import zlib
 import base64
+import os
 
 def parse_qlik_csv(file_path):
     tables = defaultdict(list)
-    # Note 'utf-8-sig' removes the BOM automatically!
     with open(file_path, newline='', encoding='utf-8-sig') as f:
         reader = csv.DictReader(f)
-        reader.fieldnames = [fn.strip() for fn in reader.fieldnames]
-        for row in reader:
-            print("Row received:", row)
-            if 'TableName' not in row or 'FieldName' not in row:
-                print("Skipping row, missing keys:", row)
-                continue
-            table = row['TableName'].strip()
-            field = row['FieldName'].strip()
-            keytype = row['KeyType'].strip() if row['KeyType'] else ""
-            if keytype:
-                field += f" ({keytype})"
-            tables[table].append(field)
+        # Normalize headers
+        headers = [fn.strip() for fn in reader.fieldnames]
+        
+        if 'TableName' in headers and 'FieldName' in headers:
+            # --- Old "semantic model" style ---
+            for row in reader:
+                table = row['TableName'].strip()
+                field = row['FieldName'].strip()
+                keytype = row.get('KeyType', '').strip()
+                if keytype:
+                    field += f" ({keytype})"
+                tables[table].append(field)
+        else:
+            # --- Data Table style ---
+            table_name = os.path.splitext(os.path.basename(file_path))[0]  # Use file name as table name
+            for field in headers:
+                tables[table_name].append(field)
     return dict(tables)
 
 
