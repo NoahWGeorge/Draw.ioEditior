@@ -1,0 +1,9 @@
+Table Addresses {
+  id int
+  user_id int
+  street int
+  city int
+  state int
+  zip int
+  type int
+}
