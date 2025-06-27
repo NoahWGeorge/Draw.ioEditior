@@ -12,11 +12,24 @@
     <form method="POST" action="/upload" enctype="multipart/form-data">
       <div class="file-block">
         <label for="qlik_csv">Choose your Qlik-exported CSV file:</label>
-        <input id="qlik_csv" type="file" name="qlik_csv" accept=".csv, .xlsx" required>
+        <input id="qlik_csv" type="file" name="qlik_csv" accept=".csv" required>
       </div>
-      <button type="submit">Generate .drawio</button>
+      <div class="file-block">
+        <label for="table_mode">Table Mode:</label>
+        <select id="table_mode" name="table_mode">
+          <option value="standard">Standard Table (CSV = Table)</option>
+          <option value="columns">Each Column is a Table</option>
+        </select>
+      </div>
+      <div class="file-block">
+        <label for="output_type">Output Type:</label>
+        <select id="output_type" name="output_type">
+          <option value="drawio">Draw.io File</option>
+          <option value="dbml">DBML File</option>
+        </select>
+      </div>
+      <button type="submit">Generate</button>
     </form>
   </div>
 </body>
 </html>
-
