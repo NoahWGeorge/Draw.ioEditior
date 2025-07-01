@@ -1,6 +1,6 @@
 from flask import Flask, request, send_file, render_template
 import os
-from utils import parse_qlik_csv, parse_columns_as_tables, create_valid_drawio_file, generate_dbml
+from utils import parse_qlik_csv, parse_columns_as_entities, create_valid_drawio_file, generate_dbml
 
 app = Flask(__name__)
 UPLOAD_FOLDER = 'uploads'
@@ -16,13 +16,14 @@ def index():
 def upload():
     file = request.files['qlik_csv']
     output_type = request.form.get('output_type', 'drawio')
-    table_mode = request.form.get('table_mode', 'standard')  # gets table mode from form
+    table_mode = request.form.get('table_mode', 'standard')  # 'standard' or 'columns'
     file_path = os.path.join(UPLOAD_FOLDER, file.filename)
     file.save(file_path)
 
+    # Choose parsing mode
     if table_mode == 'columns':
-        tables = parse_columns_as_tables(file_path)
-        table_rows = {}  # Not used in this mode
+        tables, data_rows = parse_columns_as_entities(file_path)
+        table_rows = {}  # Not used in this mode, just keep call signature
     else:
         tables, table_rows = parse_qlik_csv(file_path)
 
@@ -37,4 +38,3 @@ def upload():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
