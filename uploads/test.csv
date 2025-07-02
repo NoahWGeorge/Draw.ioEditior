@@ -1,0 +1,8 @@
+TableName,FieldName,KeyType
+Users,id,PK
+Users,name,
+Users,email,
+Orders,id,PK
+Orders,user_id,FK:Users.id
+Orders,order_date,
+Orders,amount,

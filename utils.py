@@ -60,35 +60,37 @@ def create_valid_drawio_file(tables, table_rows, output_path):
     import zlib
     import base64
 
-    # Clean out any blank/invalid table names
     tables = {k.strip(): v for k, v in tables.items() if k and k.strip() and k.strip().lower() not in ["none", "null"]}
-    print("Tables being drawn:", repr(list(tables.keys())))
+    table_names = list(tables.keys())
+
+    canvas_width = 1600  # Make canvas larger for big tables!
+    table_width = 700
+    height_per_field = 54
+    base_height = 150
+    gap = 180
+
+    total_width = table_width * len(table_names) + gap * (len(table_names) - 1)
+    start_x = max((canvas_width - total_width) // 2, 20)
 
     root = ET.Element("mxGraphModel")
     root_elem = ET.SubElement(root, "root")
     ET.SubElement(root_elem, "mxCell", id="0")
     ET.SubElement(root_elem, "mxCell", id="1", parent="0")
 
-    x_offset = 20
-    width = 380
-    height_per_field = 32
-    base_height = 64
-
-    print("Tables being drawn:", repr(list(tables.keys())))
-
+    table_cell_ids = {}
 
     for i, (table, fields) in enumerate(tables.items()):
-        if not table:  # Extra protection (should never trigger now)
+        if not table:
             continue
 
-        # ERD-style label as HTML table
+        # Table as HTML label (NO swimlane!)
         label = f"""
 <div>
-  <table border="1" cellpadding="4" cellspacing="0" style="border-collapse:collapse; font-size:10pt;">
-    <tr style="background:#DEB197; color:#222;">
-      <th colspan="3" style="font-size:13pt; font-weight:bold; text-align:center;">{table}</th>
+  <table border="1" cellpadding="8" cellspacing="0" style="border-collapse:collapse; font-size:20pt; min-width:540px;">
+    <tr style="background:#a67c52; color:#fff;">
+      <th colspan="3" style="font-size:24pt; font-weight:bold; text-align:center;">{table}</th>
     </tr>
-    <tr style="background:#F2F2F2;">
+    <tr style="background:#333; color:#fff;">
       <th style="font-weight:bold;">Key</th>
       <th style="font-weight:bold;">Field</th>
       <th style="font-weight:bold;">Type</th>
@@ -105,12 +107,31 @@ def create_valid_drawio_file(tables, table_rows, output_path):
 
         height = base_height + len(fields) * height_per_field
         cell_id = str(100 + i)
+        x = start_x + i * (table_width + gap)
         cell = ET.SubElement(root_elem, "mxCell", id=cell_id, value=label,
-                             style="shape=swimlane;html=1;", vertex="1", parent="1")
-        geom = ET.SubElement(cell, "mxGeometry", x=str(x_offset), y="50",
-                             width=str(width), height=str(height))
+                             style="html=1;whiteSpace=wrap;rounded=1;shadow=1;",
+                             vertex="1", parent="1")
+        geom = ET.SubElement(cell, "mxGeometry", x=str(x), y="250",
+                             width=str(table_width), height=str(height))
         geom.set("as", "geometry")
-        x_offset += width + 40
+        table_cell_ids[table] = cell_id
+
+    # Draw connectors for FK relationships
+    for src_table, fields in tables.items():
+        for field in fields:
+            key_val = field.get("Key", "")
+            if key_val.startswith("FK:"):
+                fk_ref = key_val[3:]
+                ref_table = fk_ref.split(".")[0]
+                if ref_table in table_cell_ids and src_table in table_cell_ids:
+                    ET.SubElement(root_elem, "mxCell",
+                        id=str(9000 + len(root_elem)),
+                        style="edgeStyle=orthogonalEdgeStyle;endArrow=block;html=1;strokeColor=#666;",
+                        edge="1",
+                        parent="1",
+                        source=table_cell_ids[src_table],
+                        target=table_cell_ids[ref_table]
+                    )
 
     model_xml_str = ET.tostring(root, encoding='utf-8', method='xml')
     compressed = zlib.compress(model_xml_str)[2:-4]
@@ -121,7 +142,4 @@ def create_valid_drawio_file(tables, table_rows, output_path):
     diagram.text = encoded
 
     ET.ElementTree(mxfile).write(output_path, encoding="utf-8", xml_declaration=True)
-
-
-
 
