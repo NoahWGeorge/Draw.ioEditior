@@ -5,15 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Qlik to Draw.io</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="https://use.typekit.net/hfu3oij.css">
 </head>
 <body>
   <div class="container">
     <h2>Qlik to Draw.io</h2>
     <form method="POST" action="/upload" enctype="multipart/form-data">
       <div class="file-block">
-        <label for="qlik_csv">Choose your Qlik-exported CSV file:</label>
-        <input id="qlik_csv" type="file" name="qlik_csv" accept=".csv" required>
-      </div>
+  <label for="qlik_csv">Choose your <span class="highlight">Qlik-exported</span> CSV file:</label>
+  <div id="drop-area">
+    <p>Drag & drop your file here or <span id="browse-btn"><b>browse</b></span></p>
+    <span id="file-name"></span>
+    <input id="qlik_csv" type="file" name="qlik_csv" accept=".csv" required hidden>
+  </div>
+</div>
       <div class="file-block">
         <label for="table_mode">Table Mode:</label>
         <select id="table_mode" name="table_mode">
@@ -31,5 +36,50 @@
       <button type="submit">Generate</button>
     </form>
   </div>
+  <script>
+const dropArea = document.getElementById('drop-area');
+const fileInput = document.getElementById('qlik_csv');
+const browseBtn = document.getElementById('browse-btn');
+const fileNameSpan = document.getElementById('file-name');
+
+dropArea.addEventListener('click', () => fileInput.click());
+browseBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  fileInput.click();
+});
+
+['dragenter', 'dragover'].forEach(eventName => {
+  dropArea.addEventListener(eventName, (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dropArea.classList.add('dragover');
+  });
+});
+['dragleave', 'drop'].forEach(eventName => {
+  dropArea.addEventListener(eventName, (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dropArea.classList.remove('dragover');
+  });
+});
+
+fileInput.addEventListener('change', () => {
+  if (fileInput.files.length) {
+    fileNameSpan.textContent = fileInput.files[0].name;
+    fileNameSpan.classList.add('visible');
+  } else {
+    fileNameSpan.textContent = '';
+    fileNameSpan.classList.remove('visible');
+  }
+});
+
+dropArea.addEventListener('drop', (e) => {
+  if (e.dataTransfer.files.length) {
+    fileInput.files = e.dataTransfer.files;
+    fileNameSpan.textContent = e.dataTransfer.files[0].name;
+    fileNameSpan.classList.add('visible');
+  }
+});
+</script>
 </body>
 </html>
